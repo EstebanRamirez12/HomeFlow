@@ -22,7 +22,7 @@ public class TestController {
     @GetMapping("/getTest")
     public String getTest() {
         Rol rol = rolService.getRol(1L);
-        return "YA ESTAS CONECTADO AL BACKEND " + rol.getNombre();
+        return "Backend: Si " + rol.getNombre();
     }
 
 }
