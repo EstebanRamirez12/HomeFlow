@@ -1,14 +1,11 @@
-import { Link } from "react-router-dom";
 import Hero from "../components/landing/Hero";
+import Features from "../components/landing/Features";
 
 export default function LandingPage() {
     return (
-        <main>
-            <p>landing page</p>
+        <>
             <Hero />
-            <Link to="/login">
-            Iniciar sesión
-          </Link>
-        </main>
+            <Features />
+        </>
     );
 }

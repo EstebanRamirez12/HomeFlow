@@ -1,5 +1,4 @@
-import {useEffect, useState } from 'react'
-import { Camera } from 'lucide-react';
+import { useEffect, useState } from 'react'
 import AppRoutes from "./routes/AppRoutes";
 
 function App() {
@@ -22,12 +21,9 @@ function App() {
   }, []);
 
   return (
-    <>    
-      <div>
-        <Camera color="red" size={48} />
-      </div>
-      <h1>{mensaje}</h1>
+    <>
       <AppRoutes />
+      <h1>{mensaje}</h1>
     </>
   )
 }
