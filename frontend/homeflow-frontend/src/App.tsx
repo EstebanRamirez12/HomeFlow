@@ -23,7 +23,7 @@ function App() {
   return (
     <>
       <AppRoutes />
-      <h1>{mensaje}</h1>
+      {console.log(mensaje)}
     </>
   )
 }
