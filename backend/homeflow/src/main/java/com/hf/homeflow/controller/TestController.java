@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/test")
+@RequestMapping("/api/auth")
 @CrossOrigin(origins = "http://localhost:5173")
 public class TestController {
 

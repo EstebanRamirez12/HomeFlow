@@ -1,12 +1,13 @@
 // src/schemas/formSchemas.ts
 import { z } from 'zod';
+import {isValidPhoneNumber} from "react-phone-number-input";
 
-// 1. Nombre
+// 1. Nombre, apellidos
 export const nameSchema = z
   .string()
-  .min(2, { message: 'El nombre debe tener al menos 2 caracteres' })
-  .regex(/^[A-Za-záéíóúÁÉÍÓÚñÑ\s]+$/, { message: 'El nombre solo puede contener letras' });
-
+  .min(2, { message: 'Debe tener al menos 2 caracteres' })
+  .regex(/^[A-Za-záéíóúÁÉÍÓÚñÑ\s]+$/, { message: 'Solo puede contener letras' });
+  
 // 2. Email
 export const emailSchema = z
   .email({ message: 'Correo inválido' });
@@ -44,3 +45,9 @@ export const dateSchema = z
     message: 'Fecha inválida',
   })
   .transform((val) => new Date(val));
+
+  export const phoneSchema = z
+  .string()
+  .refine(isValidPhoneNumber, {
+    message: 'Número inválido',
+  });

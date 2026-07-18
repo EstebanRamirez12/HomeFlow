@@ -6,7 +6,7 @@ function App() {
 
   const fetchTest = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/test/getTest");
+      const response = await fetch("http://localhost:8080/api/auth/getTest");
 
       const data = await response.text();
 
