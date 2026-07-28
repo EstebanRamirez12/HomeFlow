@@ -7,6 +7,7 @@ import RegisterPage from "../pages/RegisterPage"
 import AppLayout from "../layouts/AppLayout";
 import FinancePage from "../pages/app/FinancePage";
 import VerifyEmail from "../pages/VerifyEmail";
+import ActiveAccount from "../pages/ActiveAccount";
 
 export default function AppRoutes() {
     return (
@@ -17,6 +18,7 @@ export default function AppRoutes() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/verifyEmail" element={<VerifyEmail />} />
+                <Route path="activar-cuenta" element={<ActiveAccount />} />
             </Route>
 
             {/* Aplicación */}

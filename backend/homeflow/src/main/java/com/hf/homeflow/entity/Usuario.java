@@ -38,4 +38,7 @@ public class Usuario {
     private LocalDate fecCreacion;
     private Boolean estatus;
 
+    @Column(name = "token_verificacion")
+    private String tokenVerificacion;
+
 }

@@ -14,7 +14,7 @@ const registerFormSchema = z.object({
     nombre: nameSchema,
     materno: nameSchema,
     paterno: nameSchema,
-    phone: phoneSchema,
+    telefono: phoneSchema,
     passwordConfirm: z.string(),
 })
     .refine((data) => data.password === data.passwordConfirm, {
@@ -39,7 +39,7 @@ export default function Register() {
 
     const onSubmit = async (data: RegisterFormData) => {
         try {
-            const response = await fetch("http://localhost:8080/api/auth/register", {
+            const response = await fetch("http://localhost:8080/api/auth/registro", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -56,6 +56,9 @@ export default function Register() {
                 //redirige a verificar correo
                 navigate('/verifyEmail');
             } else {
+                if (result.mensaje == "El correo ya está registrado") {
+                    console.log("correo ya registrado");
+                }
                 //ese correo ya está registrado
             }
 
@@ -109,14 +112,14 @@ export default function Register() {
                         </div>
 
                         <div className="mt-2">
-                            <label htmlFor="phone">Teléfono</label>
+                            <label htmlFor="telefono">Teléfono</label>
 
                             <Controller
-                                name="phone"
+                                name="telefono"
                                 control={control}
                                 render={({ field }) => (
                                     <PhoneInput
-                                        id="phone"
+                                        id="telefono"
                                         international
                                         defaultCountry="MX"
                                         placeholder="55 1234 5678"
@@ -127,16 +130,12 @@ export default function Register() {
                                 )}
                             />
 
-                            {errors.phone && (
+                            {errors.telefono && (
                                 <p className="text-[#EF4444] text-sm mt-1">
-                                    {errors.phone.message}
+                                    {errors.telefono.message}
                                 </p>
                             )}
                         </div>
-
-                        {errors.phone && (
-                            <p>{errors.phone.message}</p>
-                        )}
 
                         <div className="mt-10">
                             <label htmlFor="email">Correo</label>
