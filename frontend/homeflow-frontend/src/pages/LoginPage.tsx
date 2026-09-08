@@ -48,11 +48,11 @@ export default function Login() {
                 navigate('/finance');
             } else {
                 console.log(result.mensaje);
-                if (result.mensaje == "Por favor verifica tu correo primero") {
-                    setMostrarMensaje(false);
-                    navigate('/verifyEmail');
+                if (result.mensaje === "Por favor verifica tu correo primero") {
+                    // Pasamos el correo ingresado en el formulario
+                    navigate('/verifyEmail', { state: { correo: data.correo } }); 
                 } else {
-                    setMostrarMensaje(true);
+                    alert(result.mensaje);
                 }
             }
         } catch (error) {
@@ -108,7 +108,7 @@ export default function Login() {
 
                     <motion.div variants={elementsUp} initial="hidden" animate="visible">
                         <p className="text-[#6B7280]">¿No tienes cuenta aún? <a href="/register" className="text-blue-600 underline hover:text-blue-800 transition-colors">Registrate</a></p>
-                        <a href="#" className="text-blue-600 underline hover:text-blue-800 transition-colors">Olividé mi contraseña</a>
+                        <a href="/olvide-password" className="text-blue-600 underline hover:text-blue-800 transition-colors">Olividé mi contraseña</a>
                     </motion.div>
                 </div>
 

@@ -40,5 +40,8 @@ public class Usuario {
 
     @Column(name = "token_verificacion")
     private String tokenVerificacion;
+    
+    @Column(name = "token_password")
+    private String tokenPassword;
 
 }

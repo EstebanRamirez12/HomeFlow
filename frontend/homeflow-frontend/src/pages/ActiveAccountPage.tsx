@@ -4,7 +4,6 @@ import { textDown, imageRight, elementsLeft } from "../utils/animation"
 import happyImg from "../assets/happy.svg"
 import warningImg from "../assets/warning.svg"
 import { useState, useEffect } from "react";
-import { vi } from "zod/v4/locales";
 
 export default function ActiveAccount() {
 

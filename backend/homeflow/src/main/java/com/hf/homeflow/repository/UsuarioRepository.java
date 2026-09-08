@@ -5,6 +5,8 @@ import org.springframework.stereotype.Repository;
 
 import com.hf.homeflow.entity.Usuario;
 import java.util.Optional;
+import java.util.List;
+
 
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
@@ -12,4 +14,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByCorreo(String correo);
 
     Optional<Usuario> findByTokenVerificacion(String token);
+    
+    Optional<Usuario> findByTokenPassword(String tokenPassword);
 }

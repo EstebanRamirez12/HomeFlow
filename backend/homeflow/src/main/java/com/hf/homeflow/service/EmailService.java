@@ -13,22 +13,51 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    public void enviarCorreoVerificacion(String destinatario, String token) throws MessagingException {
-
-        String enlace = "http://localhost:5173/activar-cuenta?token=" + token;
+    public void enviarCorreo(String destinatario, String token, String tipoCorreo) throws MessagingException {
+    	
+    	String enlace = "";
+    	String subject = "";
+    	
+    	if("activar".equals(tipoCorreo)) {
+    		enlace = "http://localhost:5173/activar-cuenta?token=" + token;
+    		subject = "Verifica tu cuenta en Home Flow One";
+    	}
+    	
+    	if("restablecer".equals(tipoCorreo)) {
+    		enlace = "http://localhost:5173/reset-password?token=" + token;
+    		subject = "Recuperar contraseña de Home Flow One";
+    	}
 
         MimeMessage mensaje = mailSender.createMimeMessage();
 
         MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
 
         helper.setTo(destinatario);
-        helper.setSubject("Verifica tu cuenta en Home Flow One");
-        helper.setText(crearPlantilla(enlace), true);
+        helper.setSubject(subject);
+        helper.setText(crearPlantilla(enlace, tipoCorreo), true);
 
         mailSender.send(mensaje);
     }
 
-    private String crearPlantilla(String enlace) {
+    private String crearPlantilla(String enlace, String tipoCorreo) {
+
+        boolean esRestablecer = "restablecer".equalsIgnoreCase(tipoCorreo);
+
+        String titulo = esRestablecer
+                ? "Restablecer contraseña"
+                : "¡Bienvenido!";
+
+        String mensaje = esRestablecer
+                ? "Para recuperar tu contraseña presiona el siguiente botón:"
+                : "Para activar tu cuenta presiona el siguiente botón:";
+
+        String textoBoton = esRestablecer
+                ? "Recuperar contraseña"
+                : "Verificar cuenta";
+
+        String mensajeRegistro = esRestablecer
+                ? "Hemos recibido una solicitud para restablecer tu contraseña en"
+                : "Gracias por registrarte en";
 
         return """
                 <!DOCTYPE html>
@@ -57,16 +86,16 @@ public class EmailService {
                                     <td style="padding:40px;">
 
                                         <h2 style="color:#333;">
-                                            ¡Bienvenido!
+                                            %s
                                         </h2>
 
                                         <p style="font-size:16px;color:#555;line-height:1.6;">
-                                            Gracias por registrarte en
+                                            %s
                                             <strong>Home Flow One</strong>.
                                         </p>
 
                                         <p style="font-size:16px;color:#555;">
-                                            Para activar tu cuenta presiona el siguiente botón:
+                                            %s
                                         </p>
 
                                         <div style="text-align:center;margin:40px 0;">
@@ -81,7 +110,7 @@ public class EmailService {
                                                 display:inline-block;
                                                 font-size:18px;
                                                 font-weight:bold;">
-                                                Verificar cuenta
+                                                %s
                                             </a>
 
                                         </div>
@@ -113,7 +142,15 @@ public class EmailService {
                 </body>
                 </html>
                 """
-                .formatted(enlace, enlace);
+                .formatted(
+                        titulo,
+                        mensajeRegistro,
+                        mensaje,
+                        enlace,
+                        textoBoton,
+                        enlace
+                );
     }
+
 
 }
