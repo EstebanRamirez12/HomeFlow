@@ -45,7 +45,7 @@ export default function Login() {
                 localStorage.setItem('token', result.token);
                 console.log("¡Login exitoso! Token guardado:", result.token);
                 setMostrarMensaje(false);
-                navigate('/finance');
+                navigate('/finanzas');
             } else {
                 console.log(result.mensaje);
                 if (result.mensaje === "Por favor verifica tu correo primero") {

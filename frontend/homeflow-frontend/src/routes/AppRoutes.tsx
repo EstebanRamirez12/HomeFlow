@@ -30,7 +30,7 @@ export default function AppRoutes() {
 
             {/* Aplicación */}
             <Route element={<AppLayout />}>
-                <Route path="/finance" element={<FinancePage />} />
+                <Route path="/finanzas" element={<FinancePage />} />
             </Route>
         </Routes>
     )

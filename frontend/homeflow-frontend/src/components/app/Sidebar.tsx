@@ -6,13 +6,13 @@ import { NavLink } from "react-router-dom";
 
 const SidebarContext = createContext<{ expanded: boolean } | null>(null);
 
-export default function Sidebar({ children }) {
+export default function Sidebar({ children, nombre, correo, iniciales }: { children: React.ReactNode; nombre?: string; correo?: string; iniciales?: string }) {
   const [expanded, setExpanded] = useState(true);
 
   return (
     <aside
       className={`h-screen shrink-0 transition-all duration-300 ${
-        expanded ? "w-64" : "w-20"
+        expanded ? "w-70" : "w-20"
       }`}
     >
       <nav className="h-full flex flex-col bg-white border-r border-gray-200 shadow-sm overflow-x-hidden">
@@ -41,17 +41,17 @@ export default function Sidebar({ children }) {
 
         <div className="border-t border-gray-200 flex items-center p-3">
           <label className="w-10 h-10 rounded-full text-blue-500 font-bold bg-blue-100 flex items-center justify-center">
-            MR
+            {iniciales}
           </label>
 
           <div
             className={`overflow-hidden transition-all duration-300 ${
-              expanded ? "ml-3 w-40 opacity-100" : "ml-0 w-0 opacity-0"
+              expanded ? "ml-3 w-55 opacity-100" : "ml-0 w-0 opacity-0"
             }`}
           >
             <div className="leading-4">
-              <h4 className="font-semibold">John Doe</h4>
-              <span className="text-xs text-gray-600">johndoe@gmail.com</span>
+              <h4 className="font-semibold text-sm">{nombre}</h4>
+              <span className="text-xs text-gray-600">{correo}</span>
             </div>
           </div>
 
