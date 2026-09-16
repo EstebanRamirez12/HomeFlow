@@ -1,11 +1,13 @@
 package com.hf.homeflow.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter @Setter
 @AllArgsConstructor
-public class AuthResponse {
+public class LoginResponseDto {
     private String token;
     private String mensaje;
+    private boolean tieneGrupo;
 }

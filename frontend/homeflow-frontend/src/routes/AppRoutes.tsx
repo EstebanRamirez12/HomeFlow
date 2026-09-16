@@ -10,6 +10,7 @@ import VerifyEmail from "../pages/VerifyEmailPage";
 import ActiveAccount from "../pages/ActiveAccountPage";
 import ForgotPassword from "../pages/ForgotPasswordPage";
 import ResetPasswordPage from "../pages/ResetPasswordPage";
+import OnboardingPage from "../pages/app/OnboardingPage";
 
 export default function AppRoutes() {
     return (
@@ -27,6 +28,9 @@ export default function AppRoutes() {
                 <Route path="/olvide-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
             </Route>
+
+            {/* Usuario autenticado pero todavía sin hogar */}
+            <Route path="/onboarding" element={<OnboardingPage />} />
 
             {/* Aplicación */}
             <Route element={<AppLayout />}>

@@ -12,20 +12,24 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hf.homeflow.dto.AuthResponse;
+import com.hf.homeflow.dto.LoginResponseDto;
 import com.hf.homeflow.dto.ResetPasswordRequest;
 import com.hf.homeflow.dto.LoginRequest;
+import com.hf.homeflow.dto.LoginResponseDto;
 import com.hf.homeflow.dto.RegistroRequest;
 import com.hf.homeflow.entity.Acceso;
 import com.hf.homeflow.entity.Usuario;
 import com.hf.homeflow.repository.AccesoRepository;
+import com.hf.homeflow.repository.GrupoUsuarioRepository;
 import com.hf.homeflow.repository.UsuarioRepository;
 import com.hf.homeflow.security.JwtService;
 import com.hf.homeflow.service.EmailService;
@@ -44,41 +48,46 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
-    private final UserDetailsService userDetailsService;
     private final JwtService jwtService;
 
     private final UsuarioRepository usuarioRepository;
     private final AccesoRepository accesoRepository;
     private final PasswordEncoder passwordEncoder;
+    private final GrupoUsuarioRepository grupoUsuarioRepository;
     private final EmailService emailService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest request) {
-        // generarMiHash();
-
+    public ResponseEntity<LoginResponseDto> authenticateUser(@RequestBody LoginRequest request) {
         try {
-            // Gerente valida pass
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getCorreo(), request.getPassword()));
+            // 1. Valida credenciales y estado habilitado (si falla lanza BadCredentialsException o DisabledException)
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getCorreo(), request.getPassword())
+            );
 
-            // pass ok cargar datos del usuario
-            UserDetails user = userDetailsService.loadUserByUsername(request.getCorreo());
+            // 2. Reutilizamos el UserDetails que authenticationManager YA obtuvo de la BD
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-            // genera y manda token
-            String token = jwtService.generateToken(user);
-            return ResponseEntity.ok(new AuthResponse(token, "login exitoso"));
+            // 3. Obtenemos el ID del usuario directamente para la validación del grupo
+            Usuario usuario = usuarioRepository.findByCorreo(request.getCorreo())
+                    .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
+            boolean tieneGrupo = grupoUsuarioRepository.existsByUsuario_IdUsuarioAndEstatusTrue(usuario.getIdUsuario());
+
+            // 4. Generamos token
+            String token = jwtService.generateToken(userDetails);
+
+            return ResponseEntity.ok(new LoginResponseDto(token, "Inicio de sesión exitoso", tieneGrupo));
 
         } catch (DisabledException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new AuthResponse(null, "Por favor verifica tu correo primero"));
+                    .body(new LoginResponseDto(null, "Por favor verifica tu correo primero", false));
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new AuthResponse(null, "Correo o contraseña incorrectos"));
+                    .body(new LoginResponseDto(null, "Correo o contraseña incorrectos", false));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new AuthResponse(null, "Error inesperado"));
+                    .body(new LoginResponseDto(null, "Error inesperado", false));
         }
-
     }
 
     private void generarMiHash() {
@@ -90,13 +99,13 @@ public class AuthController {
     }
 
     @PostMapping("/registro")
-    public ResponseEntity<AuthResponse> registrarUsuario(@RequestBody RegistroRequest request)
+    public ResponseEntity<LoginResponseDto> registrarUsuario(@RequestBody RegistroRequest request)
             throws MessagingException {
 
         LocalDate currentDate = LocalDate.now(ZoneId.of("America/Mexico_City"));
 
         if (usuarioRepository.findByCorreo(request.getCorreo()).isPresent()) {
-            return ResponseEntity.badRequest().body(new AuthResponse(null, "El correo ya está registrado"));
+            return ResponseEntity.badRequest().body(new LoginResponseDto(null, "El correo ya está registrado", false));
         }
 
         // crear y guardar usuario
@@ -129,11 +138,11 @@ public class AuthController {
 
         emailService.enviarCorreo(usuGuardado.getCorreo(), usuGuardado.getTokenVerificacion(), "activar");
 
-        return ResponseEntity.ok(new AuthResponse(null, "Registro exitoso. Revisa tu correo para verificar tu cuenta"));
+        return ResponseEntity.ok(new LoginResponseDto(null, "Registro exitoso. Revisa tu correo para verificar tu cuenta", false));
     }
 
     @PatchMapping("/verifyToken")
-    public ResponseEntity<AuthResponse> verifyToken(@RequestBody String token) {
+    public ResponseEntity<LoginResponseDto> verifyToken(@RequestBody String token) {
         System.out.println("ESTE ES MI TOKEN: " + token);
 
         Optional<Usuario> usuObj = usuarioRepository.findByTokenVerificacion(token);
@@ -146,11 +155,11 @@ public class AuthController {
 
             usuarioRepository.save(usuarioUpdate);
 
-            return ResponseEntity.ok(new AuthResponse(null, "Token verificado exitosamente"));
+            return ResponseEntity.ok(new LoginResponseDto(null, "Token verificado exitosamente", false));
         } else {
             System.out.println("Token no encontrado");
             return ResponseEntity.badRequest()
-                    .body(new AuthResponse(null, "El enlace de verificación es inválido o ya fue utilizado"));
+                    .body(new LoginResponseDto(null, "El enlace de verificación es inválido o ya fue utilizado", false));
         }
     }
     
@@ -173,7 +182,7 @@ public class AuthController {
             System.out.println("Intento de recuperación para correo no existente: " + correo);
         }
         
-        return ResponseEntity.ok(new AuthResponse(null, "Si el correo está registrado, recibirás un enlace de recuperación."));
+        return ResponseEntity.ok(new LoginResponseDto(null, "Si el correo está registrado, recibirás un enlace de recuperación.", false));
     }
     
     @PatchMapping("/resetPassword")
@@ -184,7 +193,7 @@ public class AuthController {
 
         if (usuarioOpt.isEmpty()) {
             return ResponseEntity.badRequest()
-                    .body(new AuthResponse(null, "El token es inválido o ya fue utilizado"));
+                    .body(new LoginResponseDto(null, "El token es inválido o ya fue utilizado", false));
         }
 
         Usuario usuario = usuarioOpt.get();
@@ -201,7 +210,7 @@ public class AuthController {
 
         usuarioRepository.save(usuario);
 
-        return ResponseEntity.ok(new AuthResponse(null, "Contraseña actualizada exitosamente"));
+        return ResponseEntity.ok(new LoginResponseDto(null, "Contraseña actualizada exitosamente", false));
     }
     
     @PostMapping("/resend-verification")
@@ -209,7 +218,7 @@ public class AuthController {
         String correo = request.get("correo");
         
         if (correo == null || correo.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(new AuthResponse(null, "El correo es requerido"));
+            return ResponseEntity.badRequest().body(new LoginResponseDto(null, "El correo es requerido", false));
         }
 
         Optional<Usuario> usuOpt = usuarioRepository.findByCorreo(correo);
@@ -218,7 +227,7 @@ public class AuthController {
             Usuario usuario = usuOpt.get();
 
             if (usuario.getVerificado() != null && usuario.getVerificado()) {
-                return ResponseEntity.badRequest().body(new AuthResponse(null, "Esta cuenta ya está verificada. Puedes iniciar sesión."));
+                return ResponseEntity.badRequest().body(new LoginResponseDto(null, "Esta cuenta ya está verificada. Puedes iniciar sesión.", false));
             }
 
             usuario.setTokenVerificacion(UUID.randomUUID().toString());
@@ -226,10 +235,10 @@ public class AuthController {
 
             emailService.enviarCorreo(usuario.getCorreo(), usuario.getTokenVerificacion(), "activar");
 
-            return ResponseEntity.ok(new AuthResponse(null, "Un nuevo correo de verificación ha sido enviado."));
+            return ResponseEntity.ok(new LoginResponseDto(null, "Un nuevo correo de verificación ha sido enviado.", false));
         }
 
-        return ResponseEntity.badRequest().body(new AuthResponse(null, "No se encontró ningún usuario con este correo."));
+        return ResponseEntity.badRequest().body(new LoginResponseDto(null, "No se encontró ningún usuario con este correo.", false));
     }
 
 }
